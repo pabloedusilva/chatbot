@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>WhatsApp QR Code</title>
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+        :root {
+            --primary-color: #25D366;
+            --secondary-color: #128C7E;
+            --dark-color: #075E54;
+            --light-color: #DCF8C6;
+            --bg-color: #f0f2f5;
+            --white: #ffffff;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            transition: background-color 0.3s ease;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 2.5rem;
+            background-color: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .logo {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 3px;
+            background: var(--primary-color);
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+        }
+        
+        #qrcode-container {
+            background-color: var(--white);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 2rem auto;
+            position: relative;
+            width: 250px;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        #qrcode-container::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 2px dashed var(--primary-color);
+            border-radius: 18px;
+            opacity: 0.5;
+            animation: rotate 20s linear infinite;
+        }
+
+        /* @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        } */
+        
+        #qrcode {
+            max-width: 100%;
+            max-height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        #qrcode-container:hover {
+            transform: scale(1.03);
+        }
+        
+        .status-container {
+            margin-top: 1.5rem;
+            position: relative;
+        }
+        
+        #status {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(37, 211, 102, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+            }
+        }
+        
+        .loading-dots {
+            display: inline-flex;
+            margin-left: 5px;
+        }
+        
+        .loading-dots span {
+            width: 5px;
+            height: 5px;
+            margin: 0 3px;
+            background-color: var(--dark-color);
+            border-radius: 50%;
+            display: inline-block;
+            animation: dots 1.5s infinite ease-in-out;
+        }
+        
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes dots {
+            0%, 100% {
+                transform: scale(0.2);
+                opacity: 0.2;
+            }
+            50% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .info-text {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .scan-animation {
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background: rgba(37, 211, 102, 0.5);
+            top: 0;
+            left: 0;
+            animation: scan 2s infinite;
+            opacity: 0;
+            z-index: 2;
+        }
+        
+        @keyframes scan {
+            0% {
+                top: 0;
+                opacity: 0.8;
+            }
+            100% {
+                top: 100%;
+                opacity: 0.2;
+            }
+        }
+        
+        /* Tema escuro toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+        
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+        
+        /* Tema escuro */
+        body.dark-mode {
+            background-color: #222;
+            color: #eee;
+        }
+        
+        body.dark-mode .container {
+            background-color: #333;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        body.dark-mode h1 {
+            color: var(--primary-color);
+        }
+        
+        body.dark-mode #qrcode-container {
+            background-color: #444;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        body.dark-mode .theme-toggle {
+            color: var(--light-color);
+        }
+        
+        body.dark-mode #status {
+            background-color: #444;
+            color: var(--primary-color);
+        }
+        
+        body.dark-mode .info-text {
+            color: #aaa;
+        }
+        
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            #qrcode-container {
+                width: 200px;
+                height: 200px;
+            }
+        }
+    </style>
+    </head>
+    <body>
+        <div class="container">
+            <button class="theme-toggle" id="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+
+            <div class="logo">
+                <i class="fab fa-whatsapp"></i>
+                <h1>WhatsApp QR Code</h1>
+            </div>
+
+            <div id="qrcode-container">
+                <div class="scan-animation"></div>
+                <img id="qrcode" src alt="QR Code">
+            </div>
+
+            <div class="status-container">
+                <p id="status">Aguardando QR Code<span
+                        class="loading-dots"><span></span><span></span><span></span></span></p>
+            </div>
+
+            <p class="info-text">Escaneie o código QR com seu WhatsApp para
+                conectar sua conta</p>
+        </div>
+
+        <script>
+        // Funcionalidade principal para buscar o QR code
+        function fetchQRCode() {
+            // Mostrar animação de carregamento
+            document.getElementById('status').innerHTML = 'Aguardando QR Code<span class="loading-dots"><span></span><span></span><span></span></span>';
+            
+            fetch('/qrcode')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.qrcode) {
+                        document.getElementById('qrcode').src = data.qrcode;
+                        document.getElementById('status').textContent = 'QR Code pronto para leitura';
+                        
+                        // Adicionar animação de sucesso
+                        document.getElementById('qrcode-container').classList.add('success');
+                        setTimeout(() => {
+                            document.getElementById('qrcode-container').classList.remove('success');
+                        }, 1000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar QR code:', error);
+                    document.getElementById('status').textContent = 'Erro ao carregar QR Code';
+                });
+        }
+
+        // Alterna entre tema claro e escuro
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                this.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                this.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        });
+
+        // Efeito de hover no QR code
+        const qrContainer = document.getElementById('qrcode-container');
+        qrContainer.addEventListener('mouseenter', function() {
+            this.querySelector('.scan-animation').style.opacity = '1';
+        });
+        qrContainer.addEventListener('mouseleave', function() {
+            this.querySelector('.scan-animation').style.opacity = '0';
+        });
+
+        // Efeito de clique para "copiar"
+        qrContainer.addEventListener('click', function() {
+            this.classList.add('clicked');
+            setTimeout(() => {
+                this.classList.remove('clicked');
+            }, 300);
+        });
+
+        // Buscar QR code a cada 5 segundos
+        setInterval(fetchQRCode, 5000);
+        
+        // Buscar QR code imediatamente ao carregar a página
+        fetchQRCode();
+    </script>
+    </body>
+</html>
