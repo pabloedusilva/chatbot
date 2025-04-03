@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/Formlogin.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>Página de Login</title>
+</head>
+
+<body>
+    <!-- Container principal -->
+    <div class="container" id="container">
+        <!-- Formulário de login -->
+        <div class="form-container sign-in">
+            <form>
+                <h1>Entrar</h1>
+                <span>Login</span>
+                <input type="email" placeholder="Email ou ID" required>
+                <div class="password-field">
+                    <input type="password" placeholder="Senha" id="signinPassword" required>
+                    <i class='bx bx-hide eye-icon'></i>
+                </div>
+                <a href="#">Esqueceu a senha?</a>
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
+
+        <!-- Container do painel deslizante com imagem de fundo -->
+        <div class="toggle-container">
+            <div class="toggle">
+                <div class="toggle-panel">
+                    <div class="toggle-panel-inner">
+                    </div>
+                </div>
+            </div>
+        </div>
+    <script src="/js/formLogin.js"></script>
+</body>
+
+</html>
