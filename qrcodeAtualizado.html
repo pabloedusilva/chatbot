@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>WhatsApp QR Code</title>
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+        :root {
+            --primary-color: #25D366;
+            --secondary-color: #19b652;
+            --dark-color: #075E54;
+            --light-color: #DCF8C6;
+            --bg-color: #f0f2f5;
+            --container-bg: #ffffff;
+            --text-color: #333;
+            --secondary-text: #666;
+            --qr-container-bg: #ffffff;
+            --qr-container-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            --container-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --status-bg: #DCF8C6;
+            --status-color: #075E54;
+            --button-bg: #25D366;
+            --button-hover-bg: #25D366;
+            --button-text: #ffffff;
+            --tabs-border: #ddd;
+        }
+
+        html[data-theme='dark'] {
+            --primary-color: #25D366;
+            --secondary-color: #128C7E;
+            --dark-color: #25D366;
+            --light-color: #DCF8C6;
+            --bg-color: #222;
+            --container-bg: #333;
+            --text-color: #eee;
+            --secondary-text: #aaa;
+            --qr-container-bg: #444;
+            --qr-container-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            --container-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            --status-bg: #444;
+            --status-color: #25D366;
+            --button-bg: #128C7E;
+            --button-hover-bg: #19b652;
+            --button-text: #ffffff;
+            --tabs-border: #555;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+            perspective: 1000px;
+        }
+
+        /* Container Principal - Melhorado */
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 2.5rem;
+            background-color: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: var(--container-shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1), 
+                        box-shadow 0.5s ease, 
+                        background-color 0.5s ease;
+            opacity: 0;
+            transform: translateY(40px) rotateX(5deg);
+            animation: container-entry 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.2s forwards;
+            margin: 15px;
+        }
+
+        @keyframes container-entry {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) rotateX(5deg);
+                box-shadow: var(--container-shadow);
+            }
+            60% {
+                transform: translateY(-10px) rotateX(-2deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+                box-shadow: var(--container-shadow);
+            }
+        }
+
+        .container:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 25px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Logo - Melhorado */
+        .logo {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            animation: logo-entry 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s forwards;
+        }
+
+        @keyframes logo-entry {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(-15px);
+            }
+            50% {
+                transform: scale(1.1) translateY(0);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            filter: drop-shadow(0 2px 5px rgba(37, 211, 102, 0.3));
+            animation: logo-icon-entry 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.7s both;
+        }
+
+        @keyframes logo-icon-entry {
+            0% {
+                transform: rotate(-90deg) scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                transform: rotate(20deg) scale(1.2);
+            }
+            100% {
+                transform: rotate(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Título - Melhorado */
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+            transition: color 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: title-entry 0.7s cubic-bezier(0.215, 0.61, 0.355, 1) 0.9s forwards;
+        }
+
+        @keyframes title-entry {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(37, 211, 102, 0), rgba(37, 211, 102, 1), rgba(37, 211, 102, 0));
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+            animation: title-line-entry 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.4s forwards;
+        }
+
+        @keyframes title-line-entry {
+            0% {
+                width: 0;
+                opacity: 0;
+            }
+            100% {
+                width: 80%;
+                opacity: 1;
+            }
+        }
+
+        /* QR Code Container - Melhorado */
+        #qrcode-container {
+            background-color: var(--qr-container-bg);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 2rem auto;
+            position: relative;
+            width: 250px;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--qr-container-shadow);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                      background-color 0.5s ease, 
+                      box-shadow 0.5s ease;
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            animation: qr-container-entry 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 1s forwards;
+        }
+
+        @keyframes qr-container-entry {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            60% {
+                transform: translateY(-10px) scale(1.02);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Efeito de borda do QR Code */
+        #qrcode-container::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 2px dashed var(--primary-color);
+            border-radius: 18px;
+            opacity: 0;
+            animation: border-entry 1s cubic-bezier(0.215, 0.61, 0.355, 1) 1.8s forwards;
+        }
+
+        @keyframes border-entry {
+            0% {
+                opacity: 0;
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+        }
+
+        #qrcode-container:hover {
+            transform: scale(1.03) translateY(-5px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* QR Code - Melhorado */
+        #qrcode {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            opacity: 0;
+            transform: scale(0.85);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: qr-entry 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 1.2s forwards;
+            display: none;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        @keyframes qr-entry {
+            0% {
+                opacity: 0;
+                transform: scale(0.85) rotate(-3deg);
+            }
+            50% {
+                transform: scale(1.05) rotate(1deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        /* Scanner Effect - Melhorado */
+        .scan-animation {
+            position: absolute;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, 
+                                       rgba(37, 211, 102, 0) 0%, 
+                                       rgba(37, 211, 102, 0.4) 50%, 
+                                       rgba(37, 211, 102, 0) 100%);
+            top: 0;
+            left: 0;
+            filter: blur(2px);
+            animation: scan 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+            opacity: 0;
+            z-index: 2;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        /* Status Container - Melhorado */
+        .status-container {
+            margin-top: 1.5rem;
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: status-entry 0.7s cubic-bezier(0.215, 0.61, 0.355, 1) 1.3s forwards;
+        }
+
+        @keyframes status-entry {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #status {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            background-color: var(--status-bg);
+            color: var(--status-color);
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: status-text-entry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.5s forwards, 
+                       pulse 2s infinite 2s;
+        }
+
+        @keyframes status-text-entry {
+            0% {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+            }
+        }
+
+        /* Loading Dots - Melhorado */
+        .loading-dots {
+            display: inline-flex;
+            margin-left: 5px;
+            align-items: center;
+        }
+
+        .loading-dots span {
+            width: 6px;
+            height: 6px;
+            margin: 0 3px;
+            background-color: var(--status-color);
+            border-radius: 50%;
+            display: inline-block;
+            opacity: 0;
+            animation: dots 1.5s infinite ease-in-out;
+            transform: translateY(0);
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes dots {
+            0% {
+                transform: translateY(0);
+                opacity: 0.2;
+            }
+            40% {
+                transform: translateY(-8px);
+                opacity: 1;
+            }
+            80% {
+                transform: translateY(0);
+                opacity: 0.2;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 0.2;
+            }
+        }
+
+        /* Info Text - Melhorado */
+        .info-text {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            line-height: 1.5;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: info-entry 0.7s cubic-bezier(0.215, 0.61, 0.355, 1) 1.6s forwards;
+            transition: color 0.3s ease;
+        }
+
+        @keyframes info-entry {
+            0% {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Theme Toggle - Melhorado */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                       color 0.3s ease, 
+                       opacity 0.5s ease;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(-10px) rotate(-15deg);
+            animation: toggle-entry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.7s forwards;
+        }
+
+        @keyframes toggle-entry {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px) rotate(-15deg);
+            }
+            70% {
+                transform: translateY(3px) rotate(5deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) rotate(0);
+            }
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg) scale(1.1);
+        }
+
+        /* Connection Status - Melhorado */
+        .connection-status {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: connection-entry 0.7s cubic-bezier(0.215, 0.61, 0.355, 1) 1.1s forwards;
+        }
+
+        @keyframes connection-entry {
+            0% {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #e74c3c; /* Vermelho para "NÃO CONECTADO" */
+            margin-right: 10px;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+            position: relative;
+            animation: pulse-status 1.8s infinite;
+        }
+
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: rgba(231, 76, 60, 0.5);
+            top: 0;
+            left: 0;
+            z-index: -1;
+            animation: indicator-ripple 1.8s infinite;
+        }
+
+        @keyframes indicator-ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .status-indicator.connected {
+            background-color: #2ecc71; /* Verde para "CONECTADO" */
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+        }
+
+        .status-indicator.connected::after {
+            background-color: rgba(46, 204, 113, 0.5);
+        }
+
+        .status-text {
+            color: var(--text-color);
+            transition: color 0.3s ease;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Animação de pulsação para o indicador */
+        @keyframes pulse-status {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Footer - Melhorado */
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            font-size: 13px;
+            color: var(--secondary-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: footer-entry 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) 1.9s forwards;
+        }
+
+        @keyframes footer-entry {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1.5rem;
+                max-width: 450px;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .logo i {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 1.5rem 1rem;
+                margin: 10px;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            #qrcode-container {
+                width: 200px;
+                height: 200px;
+                padding: 1rem;
+            }
+
+            .logo i {
+                font-size: 2rem;
+            }
+
+            #status {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .info-text {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            #qrcode-container {
+                width: 180px;
+                height: 180px;
+                margin: 1.5rem auto;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .container {
+                padding-top: 1.5rem;
+                padding-bottom: 1.5rem;
+            }
+
+            #qrcode-container {
+                margin: 1rem auto;
+            }
+
+            .info-text {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <button class="theme-toggle" id="theme-toggle">
+                <div class="theme-icon">
+                    <!-- O ícone será carregado pelo JavaScript -->
+                </div>
+            </button>
+
+            <div class="logo">
+                <i class="fab fa-whatsapp"></i>
+                <h1>WhatsApp QR Code</h1>
+            </div>
+
+            <!-- Indicador de status de conexão -->
+            <div class="connection-status">
+                <span class="status-indicator"></span>
+                <span class="status-text">NÃO CONECTADO</span>
+            </div>
+
+            <div id="qrcode-container">
+                <div class="scan-animation"></div>
+                <img id="qrcode" src alt="QR Code">
+            </div>
+
+            <div class="status-container">
+                <p id="status">Aguardando QR Code<span
+                        class="loading-dots"><span></span><span></span><span></span></span></p>
+            </div>
+
+            <p class="info-text">Escaneie o código QR com seu WhatsApp para
+                conectar sua conta</p>
+        </div>
+
+        <div class="footer">
+            By Pablo
+        </div>
+
+        <script>
+        // Cache de elementos DOM frequentemente acessados
+        const elements = {};
+
+        // Função para obter elementos com cache
+        function getElement(id) {
+            if (!elements[id]) {
+                elements[id] = document.getElementById(id);
+            }
+            return elements[id];
+        }
+
+        // Função para alternar entre tema claro e escuro
+        const toggleTheme = () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            updateThemeIcon(newTheme);
+        };
+
+        // Rendereização de ícones de tema com templates
+        const themeIcons = {
+            dark: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
+            light: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`
+        };
+
+        // Função para atualizar o ícone do tema
+        const updateThemeIcon = (theme) => {
+            const themeIcon = document.querySelector('.theme-icon');
+            if (themeIcon) {
+                themeIcon.innerHTML = themeIcons[theme] || themeIcons.light;
+            }
+        };
+
+        // Função para definir o tema inicial
+        const setInitialTheme = () => {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+        };
+
+        // Templates para texto de status
+        const statusTemplates = {
+            waiting: 'Aguardando QR Code<span class="loading-dots"><span></span><span></span><span></span></span>',
+            ready: 'QR Code pronto para leitura',
+            error: 'Erro ao carregar QR Code'
+        };
+
+        // Função para buscar o QR code otimizada
+        function fetchQRCode() {
+            const status = getElement('status');
+            const qrcode = getElement('qrcode');
+
+            // Mostrar animação de carregamento
+            status.innerHTML = statusTemplates.waiting;
+            qrcode.style.display = 'none';
+
+            // Usar requestAnimationFrame para operações de UI
+            requestAnimationFrame(() => {
+                fetch('/qrcode')
+                    .then(response => response.json())
+                    .then(data => {                        
+                        if (data.qrcode) {
+                            // Mostra o QR code
+                            qrcode.style.display = 'block';
+                            qrcode.src = data.qrcode;
+                            status.innerHTML = statusTemplates.ready;
+
+                            // Adicionar animação de sucesso
+                            const container = getElement('qrcode-container');
+                            container.classList.add('success');
+                            setTimeout(() => {
+                                container.classList.remove('success');
+                            }, 1000);
+                        } else {
+                            // QR não disponível
+                            status.innerHTML = statusTemplates.error;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar QR code:', error);
+                        status.innerHTML = statusTemplates.error;
+                    });
+            });
+        }
+
+        // Função para remover o pre-loader da página
+        function removePageLoader() {
+            const loader = getElement('page-loader');
+            // Adiciona a classe para fade out
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, 500);
+        }
+
+        // Inicialização quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', () => {
+            // Definir tema inicial
+            setInitialTheme();
+            
+            // Iniciar o carregamento do QR code
+            fetchQRCode();
+            
+            // Configurar eventos de clique
+            getElement('theme-toggle').addEventListener('click', toggleTheme);
+            
+            // Remover o loader após um pequeno atraso
+            setTimeout(removePageLoader, 800);
+            
+            // Configurar atualização periódica do QR code
+            setInterval(fetchQRCode, 60000); // Atualiza a cada 60 segundos
+            
+            // Verificar se o QR code está pronto a cada 5 segundos nos primeiros 30 segundos
+            let checkCount = 0;
+            const checkInterval = setInterval(() => {
+                if (checkCount >= 6) {
+                    clearInterval(checkInterval);
+                    return;
+                }
+                fetchQRCode();
+                checkCount++;
+            }, 20000);
+        });
+
+        // Detecção de mudança de tema do sistema
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+                        // Só mudar automaticamente se o usuário não tiver definido um tema manualmente
+                        if (!localStorage.getItem('theme')) {
+                const newTheme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                updateThemeIcon(newTheme);
+            }
+        });
+
+        // Função para verificar o status da conexão
+        function checkConnectionStatus() {
+            fetch('/connection-status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusIndicator = document.querySelector('.status-indicator');
+                    const statusText = document.querySelector('.status-text');
+                    
+                    if (data.connected) {
+                        statusIndicator.classList.add('connected');
+                        statusText.textContent = 'CONECTADO';
+                        statusText.style.color = '#2ecc71';
+                    } else {
+                        statusIndicator.classList.remove('connected');
+                        statusText.textContent = 'NÃO CONECTADO';
+                        statusText.style.color = '#e74c3c';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao verificar status de conexão:', error);
+                });
+        }
+
+        // No DOMContentLoaded, adicione a verificação de status
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verificar o status da conexão periodicamente
+            checkConnectionStatus();
+            setInterval(checkConnectionStatus, 1000); // Verificar a cada 1 segundos
+        });
+        </script>
+    </body>
+</html>
